@@ -293,3 +293,92 @@ st.download_button(
 )
 
 st.info("Research/education only. Historical seasonality and model scores do not guarantee future returns.")
+
+
+st.divider()
+
+st.header("Market Risk Analyzer")
+
+risk_ticker = st.selectbox(
+
+    "Select stock for cycle risk analysis",
+
+    STOCKS,
+
+    key="risk_ticker_select",
+
+)
+
+try:
+
+    cycles = calculate_cycles(risk_ticker)
+
+    score = market_risk_score(risk_ticker)
+
+    label = risk_label(score)
+
+    c1, c2, c3, c4 = st.columns(4)
+
+    c1.metric(
+
+        "40-Day Cycle",
+
+        f"{cycles.get('40_day_cycle', float('nan')):.2f}%"
+
+    )
+
+    c2.metric(
+
+        "100-Day Cycle",
+
+        f"{cycles.get('100_day_cycle', float('nan')):.2f}%"
+
+    )
+
+    c3.metric(
+
+        "300-Day Cycle",
+
+        f"{cycles.get('300_day_cycle', float('nan')):.2f}%"
+
+    )
+
+    c4.metric(
+
+        "Risk Score",
+
+        f"{score:.1f}/100"
+
+    )
+
+    st.subheader(f"Risk Level: {label}")
+
+    sep_table = september_decline_probability(risk_ticker)
+
+    if not sep_table.empty:
+
+        st.subheader("September Decline Probability by Calendar Day")
+
+        display_table = (
+
+            sep_table
+
+            .sort_values("decline_probability", ascending=False)
+
+            .reset_index()
+
+        )
+
+        st.dataframe(
+
+            display_table,
+
+            use_container_width=True,
+
+            hide_index=True,
+
+        )
+
+except Exception as e:
+
+    st.error(f"Unable to calculate market risk: {e}")
